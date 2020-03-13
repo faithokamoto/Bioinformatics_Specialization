@@ -11,7 +11,7 @@ import java.io.IOException;
 
 //for all kinds of lists
 import java.util.*;
-
+ 
 public class Brute {
 	// Stores a codon table (codon-amino acid) for easy access
 	public static final Map<String, Character> codonTable = initializeCT();
