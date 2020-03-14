@@ -82,6 +82,24 @@ public class Brute {
 		return peptide;
 	}
 	
+	public static String reverseComplement(String dna) {
+		String reverse = "";
+		char curChar;
+		for (int i = 0; i < dna.length(); i++) {
+			curChar = dna.charAt(i);
+			if (curChar == 'A') reverse += "T";
+			else if (curChar == 'T') reverse += "A";
+			else if (curChar == 'G') reverse += "C";
+			else if (curChar == 'C') reverse += "G";
+		}
+		return reverse;
+	}
+	
+	public static ArrayList<String> peptideEncoding(String genome, String peptide) {
+		ArrayList<String> dnas = new ArrayList<String>();
+		return dnas;
+	}
+	
 	/**
 	 * <h1>Reads a file into a string</h1>
 	 * Tries to access the file to read, returns if possible
@@ -108,6 +126,8 @@ public class Brute {
 	}
 	
 	public static void main(String[] args) {
-		System.out.println(rnaToPeptide(readFileAsString("src/antibiotics/data.txt")));
+		
+		rnaToPeptide(readFileAsString("src/antibiotics/data.txt"));
+		
 	}
 }
