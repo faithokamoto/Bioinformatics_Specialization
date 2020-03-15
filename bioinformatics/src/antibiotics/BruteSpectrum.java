@@ -7,7 +7,23 @@ import java.io.IOException;
 
 //for all kinds of lists
 import java.util.*;
- 
+
+/**
+ * <h1>Brute Cyclopeptide Sequencing</h1>
+ * Contains all the necessary methods to generate the sequence of a peptide from its ideal mass spectrum,
+ * as well as some helper methods that calculate ideal spectrum of given peptides and the number of
+ * peptides with a given total mass.
+ * <br>
+ * Some important terms:
+ * <ul>
+ * 		<li><strong>peptide</strong>: a chain of amino acids, here represented by an <code>ArrayList</code>
+ * 									of integer mass values, in order</li>
+ * 		<li><strong>subpeptide</strong>: a contiguous fragment of a peptide (does not necessarily appear in
+ * 									the linear overall peptide as may wrap around from behind</li>
+ * </ul>
+ * @author faith
+ *
+ */
 public class BruteSpectrum {
 	/**
 	 * stores all the possible masses of an amino acid (excluding duplicates) for easy access

@@ -77,8 +77,6 @@ public class EncodedPeptides {
 	 * <h1>Initializes the reverse codon table from CODON_TABLE</h1>
 	 * Loops through all codons in CODON_TABLE, adding them to the arraylists of their amino acids,
 	 * initializing said arraylists when necessary.
-	 * <br>
-	 * calls: rnaToDNA
 	 * @return the finished codon table
 	 */
 	public static Map<Character, ArrayList<String>> initializeRCT() {
@@ -90,32 +88,10 @@ public class EncodedPeptides {
 			// if this codon's amino acid is not in rct yet, initialize it with an empty arraylist
 			if (!rct.containsKey(CODON_TABLE.get(codon))) rct.put(CODON_TABLE.get(codon), new ArrayList<String>());
 			// add this codon to it's amino acid's list of codons
-			rct.get(CODON_TABLE.get(codon)).add(rnaToDNA(codon));
+			rct.get(CODON_TABLE.get(codon)).add(codon.replace('U', 'T'));
 		}
 		
 		return rct;
-	}
-
-	/**
-	 * <h1>Converts an RNA string into a DNA string</h1>
-	 * Loops over rna's chars and adds them to a DNA string, changing U to T.
-	 * <br>
-	 * precondition: rna is a valid RNA string
-	 * @param rna the RNA string to convert
-	 * @return the DNA version of rna
-	 */
-	public static String rnaToDNA(String rna) {
-		// initialize return variable
-		String dna = "";
-		
-		// loop over rna's chars
-		for (char c : rna.toCharArray()) {
-			// change Us for Ts, just add other letters
-			if (c == 'U') dna += "T";
-			else dna += c;
-		}
-		
-		return dna;
 	}
 	
 	/**
