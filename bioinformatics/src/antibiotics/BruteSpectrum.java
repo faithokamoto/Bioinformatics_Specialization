@@ -11,7 +11,7 @@ import java.util.*;
 /**
  * <h1>Brute Cyclopeptide Sequencing</h1>
  * Contains all the necessary methods to generate the sequence of a peptide from its ideal mass spectrum,
- * as well as some helper methods that calculate ideal spectrum of given peptides and the number of
+ * as well as some helper methods that calculate ideal spectra of given peptides and the number of
  * peptides with a given total mass.
  * <br>
  * Some important terms:
@@ -22,7 +22,6 @@ import java.util.*;
  * 									the linear overall peptide as may wrap around from behind</li>
  * </ul>
  * @author faith
- *
  */
 public class BruteSpectrum {
 	/**
@@ -35,7 +34,7 @@ public class BruteSpectrum {
 	 * @see peptidesWithMass
 	 */
 	public static Map<Integer, Long> massPoss = new HashMap<Integer, Long>();
-
+	
 	/**
 	 * <h1>Generates an ideal mass spectrum for a given peptide</h1>
 	 * First calculates the prefix mass for each index in peptide (mass up to that point). Then loop over each
@@ -330,5 +329,6 @@ public class BruteSpectrum {
 	
 	// where I call methods to test them
 	public static void main(String[] args) {
+
 	}
 }

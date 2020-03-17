@@ -150,11 +150,11 @@ public class EncodedPeptides {
 		}
 		
 		// for each exiting DNA string (loop from back because adding on), add reverse complement
-		for (int i = dnas.size() - 1; i >= 0; i--) dnas.add(reverseComplementDNA(dnas.get(i)));
+		//for (int i = dnas.size() - 1; i >= 0; i--) dnas.add(reverseComplementDNA(dnas.get(i)));
 		
 		return dnas;
 	}
-	
+
 	/**
 	 * <h1>Finds all DNA strands in a long string that encode a peptide</h1>
 	 * Gets a Set of all DNA strings that encode the peptide, then checks each k-mer in
@@ -210,6 +210,5 @@ public class EncodedPeptides {
 	}
 	
 	 public static void main(String[] args) {
-		 
 	 }
 }
