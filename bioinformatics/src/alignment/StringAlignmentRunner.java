@@ -10,7 +10,7 @@ public class StringAlignmentRunner extends Runner {
 		// grab the strings
 		String[] data = readFileAsString("src/alignment/data.txt").split("\n");
 		// instantiate the aligner
-		StringAlignment run = new StringAlignment(data[0], data[1], true, false, false, true);
+		StringAlignment run = new StringAlignment(data[0], data[1], false, true);
 		// find the alignment
 		run.findPath();
 	}

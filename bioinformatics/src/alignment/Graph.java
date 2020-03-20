@@ -114,18 +114,7 @@ public class Graph {
 				for (Node end : start.getOuts()) {
 					// as long as this Node hasn't been calculated yet
 					if (!justCalculated.contains(end)) {
-						// initialize its weight to minimum
-						end.setWeight(Integer.MIN_VALUE);
-						// loop over all incoming paths
-						for (Node path : end.getIns().keySet()) {
-							// this the start node on this path + the path is better than the current weight
-							if (path.getWeight() + end.getIns().get(path) > end.getWeight()) {
-								// set the weight to it
-								end.setWeight(path.getWeight() + end.getIns().get(path));
-								// save this node as a backtrack
-								end.setBacktrack(path);
-							}
-						}
+						maximizeNode(end);
 						
 						// this node has just been calculated
 						justCalculated.add(end);
@@ -137,6 +126,30 @@ public class Graph {
 			considering.clear();
 			// add the nodes just calculated (expand out the network)
 			considering.addAll(justCalculated);
+		}
+	}
+	
+	/**
+	 * <h1>Finds the ideal path to use to maximize the weight of a Node</h1>
+	 * First makes sure that there are paths to check, then loops over all paths
+	 * to maximize weight, setting end's weight and backtrack in the process.
+	 * @param end the Node to maximize weight
+	 */
+	public void maximizeNode(Node end) {
+		// as long as this node has some paths in
+		if (end.getIns().size() != 0) {
+			// initialize weight to min
+			end.setWeight(Integer.MIN_VALUE);
+			
+			// loop over all start nodes of incoming paths
+			for (Node start : end.getIns().keySet()) {
+				// if using this path is better than the current weight
+				if (start.getWeight() + end.getIns().get(start) > end.getWeight()) {
+					// use it
+					end.setBacktrack(start);
+					end.setWeight(start.getWeight() + end.getIns().get(start));
+				}
+			}
 		}
 	}
 

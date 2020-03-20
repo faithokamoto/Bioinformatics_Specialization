@@ -55,10 +55,10 @@ public class StringAlignment extends Grid {
 	public StringAlignment(String one, String two, 
 			boolean startVertTaxi, boolean endVertTaxi, boolean startHorizTaxi, boolean endHorizTaxi) {
 		// initializing Path
-		super(one.length() + 1, two.length() + 1, -2, 
+		super(one.length() + 1, two.length() + 1, -1, 
 				new StringAlignmentPath(one, two, startVertTaxi || startHorizTaxi),
 				startVertTaxi, endVertTaxi, startHorizTaxi, endHorizTaxi);
 		// initializing nodes
-		initializeNodes(null, 1, -2, one, two);
+		initializeNodes(null, 1, -1, one, two);
 	}
 }

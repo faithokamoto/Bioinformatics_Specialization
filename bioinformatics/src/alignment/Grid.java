@@ -62,7 +62,6 @@ public abstract class Grid extends Graph {
 			if (i % cols != 0) {
 				// add a horizontal path between it and the one to the left
 				refer.get(i).addIn(refer.get(i - 1), indelPenalty);
-				refer.get(i - 1).addOut(refer.get(i));
 				
 				// if this Node is not in the first row as well
 				if (i >= cols) {
@@ -79,9 +78,6 @@ public abstract class Grid extends Graph {
 						refer.get(i).addIn(refer.get(i - cols - 1), match);
 					// or if the chars don't match, used the mismatch value
 					else refer.get(i).addIn(refer.get(i - cols - 1), mismatch);
-					
-					// adding this node as an out to the other
-					refer.get(i - cols - 1).addOut(refer.get(i));
 				}
 			}
 			
@@ -89,7 +85,6 @@ public abstract class Grid extends Graph {
 			if (i >= cols) {
 				// add a vertical path between it and the one above
 				refer.get(i).addIn(refer.get(i - cols), indelPenalty);
-				refer.get(i - 1).addOut(refer.get(i));
 			}
 		}
 		
@@ -108,11 +103,11 @@ public abstract class Grid extends Graph {
 	public void calculateNodes() {
 		// loop over all Nodes in first column (excluding source)
 		for (int row = 1; row < rows; row++) {
-			// if vertical jumps are allowed & indels are penalized
+			// if vertical jumps from source are allowed & indels are penalized
 			if (startVertTaxi && indelPenalty < 0) {
 				// the optimal strategy is to taxi from the source
 				refer.get(row * cols).setWeight(0);
-				refer.get(row * cols).setBacktrack(super.getSource());
+				refer.get(row * cols).setBacktrack(getSource());
 			}
 			// or if looking for only global alignment
 			else {
@@ -127,7 +122,7 @@ public abstract class Grid extends Graph {
 		for (int col = 1; col < cols; col++) {
 			if (startHorizTaxi && indelPenalty < 0) {
 				refer.get(col).setWeight(0);
-				refer.get(col).setBacktrack(super.getSource());
+				refer.get(col).setBacktrack(getSource());
 			}
 			else {
 				refer.get(col).setWeight(col * indelPenalty);
@@ -136,7 +131,7 @@ public abstract class Grid extends Graph {
 		}
 		
 		// used to track the maximal weighted Node (which will taxi to the sink)
-		Node bestNode = super.getSource();
+		Node bestNode = null;
 		int maxWeight = 0;
 		// loop over all rows (excluding first)
 		for (int row = 1; row < rows; row++) {
@@ -144,56 +139,40 @@ public abstract class Grid extends Graph {
 			for (int col = 1; col < cols; col++) {
 				// grab the current Node
 				Node curNode = refer.get(row * cols + col);
+				// maximize (by paths) the weight and backtrack of this Node
+				maximizeNode(curNode);
 				
-				// parallel arrays to hold all possible paths in
-				int index = 0;
-				int[] pathVals = new int[3];
-				Node[] orderedNodes = new Node[3];
-				// loop over all paths in
-				for (Node in : curNode.getIns().keySet()) {
-					// note the weight if this path is used (weight of node + weight of path)
-					pathVals[index] = in.getWeight() + curNode.getIns().get(in);
-					// note, in the parallel array, which node corresponds to this path
-					orderedNodes[index] = in;
-					// move the index being added to forward
-					index++;
-				}
-				
-				// find the index of the maximum value in pathVals
-				index = 0;
-				for (int i = 1; i < 3; i++) if (pathVals[i] > pathVals[index]) index = i;
-				
-				if((endHorizTaxi || (endVertTaxi && col == cols - 1)) && 
-						(endVertTaxi || (endHorizTaxi && row == rows - 1)) && pathVals[index] < 0) {
+				// if taxi to source is allowed and it would be beneficial
+				if(startVertTaxi && startHorizTaxi && curNode.getWeight() < 0) {
+					// taxi back to source
 					curNode.setWeight(0);
-					curNode.setBacktrack(super.getSource());
-				} else {
-					// set this node's optimal weight and backtrack
-					curNode.setWeight(pathVals[index]);
-					curNode.setBacktrack(orderedNodes[index]);
+					curNode.setBacktrack(getSource());
 				}
 				
+				// if taxi to sink is allowed (or it is not required in one direction)
+				// and the current Node has the best weight so far
 				if ((endHorizTaxi || (endVertTaxi && col == cols - 1)) && 
-						(endVertTaxi || (endHorizTaxi && row == rows - 1))
-						&& curNode.getWeight() > maxWeight) {
+						(endVertTaxi || (endHorizTaxi && row == rows - 1)) && curNode.getWeight() > maxWeight) {
+					// set the best-Node stats to this Node
 					maxWeight = curNode.getWeight();
 					bestNode = curNode;
 				}
 			}
 		}
-		if ((endHorizTaxi || endVertTaxi) && super.getSink() != bestNode) {
-			super.getSink().setWeight(maxWeight);
-			super.getSink().setBacktrack(bestNode);
+		
+		// if taxi helped
+		if (bestNode != null && bestNode != getSink()) {
+			// taxi from bestNode to the sink
+			getSink().setWeight(maxWeight);
+			getSink().setBacktrack(bestNode);
 		}
 	}
-
-	public int getIndelPenalty() {return this.indelPenalty;}
+	
+	// various getters
 	
 	public Node getNode(int id) {return this.refer.get(id);}
 	
+	// refer should not be accessed directly, only added to
+	
 	public void addNode(int id) {this.refer.put(id, new Node(id));}
-	
-	public int getCols() {return this.cols;}
-	
-	public int getRows() {return this.rows;}
 }

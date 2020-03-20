@@ -42,35 +42,35 @@ public class StringAlignmentPath extends Path {
 		// while the beginning jump is detected as a taxi, remove the node there
 		while (local && super.getNodes().get(index + 1).getWeight() == 0) super.removeNode();
 		
-		
 		// the first "lastID" (ID of node at the start of the mini-path) is the source's ID
 		int lastID = super.getNodes().get(0).getID();
 		// placeholder to make calculations clearer
 		int cols = two.length() + 1;
+		int total = (one.length() + 1) * cols;
 		// loop over all nodes after the first
 		for (int i = 1; i < super.getNodes().size(); i++) {
 			// save the "nextID" (ID of node at the end of the mini-path)
 			int nextID = super.getNodes().get(i).getID();
 			
 			// it the difference was 1, this is a horizontal move
-			if (nextID - lastID == 1) {
+			if ((nextID - lastID) % total == 1) {
 				// no chars from one were used
 				ret[0] += '-';
 				// calculate which char from two was used
-				ret[1] += two.charAt(lastID % cols);
+				ret[1] += two.charAt((lastID  % total) % cols);
 			}
 			// if the difference was a column's worth, this is a vertical move
-			else if (nextID - lastID == cols) {
+			else if ((nextID - lastID) % total == cols) {
 				// calculate which char from one was used
-				ret[0] += one.charAt(lastID / cols);
+				ret[0] += one.charAt((lastID % total) / cols);
 				// no chars from two were used
 				ret[1] += '-';
 			}
 			// if the difference was a column + 1's worth, this is a diagonal move
-			else if (nextID - lastID - 1 == cols){
+			else if ((nextID - lastID - 1) % total == cols){
 				// calculate the chars from one & two which were used
-				ret[0] += one.charAt(lastID / cols);
-				ret[1] += two.charAt(lastID % cols);
+				ret[0] += one.charAt((lastID % total) / cols);
+				ret[1] += two.charAt((lastID % total) % cols);
 			}
 			// the end node is the start node of the next path
 			lastID = nextID;

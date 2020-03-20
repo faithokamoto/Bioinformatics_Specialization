@@ -7,7 +7,7 @@ import java.util.HashMap;
  * <h1>Basic runner for the <code>ProteinAlignmentGraph</code> class</h1>
  * @author faith
  */
-public class ProteinAlignmentGraphRunner extends Runner {
+public class ProteinAlignmentRunner extends Runner {
 	/**
 	 * <h1>Reads data into a scoring matrix</h1>
 	 * Splits the data into rows, using the header as a reference to figure out the coordinates,
