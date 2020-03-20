@@ -14,16 +14,24 @@ import java.util.HashSet;
 public class Graph {
 	// the best-weighted path through this graph
 	private Path dag;
-	// all the nodes in this graph
-	private HashSet<Node> nodes;
 	// the starting and end nodes of this graph
 	private Node source, sink;
 	
 	/**
-	 * This class should never be instantiated without nodes given
+	 * This class should never be initialized without a information,
+	 * what's a Graph bereft of Nodes/Paths?
 	 */
 	@SuppressWarnings("unused")
 	private Graph() {}
+	
+	/**
+	 * <h1>Constructor for subclasses</h1>
+	 * Allows for specialized Paths to be used.
+	 * @param pathType the specialized Path
+	 */
+	public Graph(Path pathType) {
+		dag = pathType;
+	}
 	
 	/**
 	 * <h1>Constructor</h1>
@@ -48,8 +56,6 @@ public class Graph {
 	 * @param sink the ending node
 	 */
 	public void initializeNodes(String data, int source, int sink) {
-		// initialize nodes
-		nodes = new HashSet<Node>();
 		// used to make sure only one node of each name is created
 		HashMap<Integer, Node> refer = new HashMap<Integer, Node>();
 		
@@ -66,17 +72,11 @@ public class Graph {
 			end = Integer.parseInt(path.split(">")[1].split(":")[0]);
 			val = Integer.parseInt(path.split(":")[1]);
 			
-			// if the start node hasn't yet been created
-			if (!refer.containsKey(start)) {
-				// initialize it and note that it has
-				nodes.add(refer.get(start));
-				refer.put(start, new Node(start));
-			}
+			// if the start node hasn't yet been created, initialize it
+			if (!refer.containsKey(start)) refer.put(start, new Node(start));
+			
 			// same for the end node
-			if (!refer.containsKey(end)) {
-				nodes.add(refer.get(end));
-				refer.put(end, new Node(end));
-			}
+			if (!refer.containsKey(end)) refer.put(end, new Node(end));
 			
 			// add the end node as one of the start node's outgoing nodes
 			refer.get(start).addOut(refer.get(end));
@@ -90,14 +90,14 @@ public class Graph {
 	}
 
 	/**
-	 * <h1>Find, for each node, the maximal weight and the backtrack to get there</h1>
+	 * <h1>Finds, for each node, the maximal weight and the backtrack to get there</h1>
 	 * Starting with the source Node, loop over all Nodes just considered, loop over all of their outgoing Nodes,
 	 * and loop over (for each outgoing Node) all of the incoming paths, and find which one gives the best weight
 	 * if followed. Saves that weight as the Node's weight, and the incoming Node as the outgoing Node's backtrack,
 	 * then repeats the whole process with all nodes that have just been calculated (moves from nodes one out from
 	 * source, to nodes 2 out from source, and so on).
 	 */
-	private void calculateNodes() {
+	public void calculateNodes() {
 		// set of Nodes to look at this time through the loop
 		HashSet<Node> considering = new HashSet<Node>();
 		// at first, only consider source
@@ -127,7 +127,7 @@ public class Graph {
 							}
 						}
 						
-						// this node has just been calcualted
+						// this node has just been calculated
 						justCalculated.add(end);
 					}
 				}
@@ -139,48 +139,27 @@ public class Graph {
 			considering.addAll(justCalculated);
 		}
 	}
-	
-	/**
-	 * <h1>Backtracks from the sink node to find the DAG for thsi graph</h1>
-	 * Starting at the sink node, adds a Node to dag and then backtracks to the next node.
-	 * Once the source node is reached, add it and leave.
-	 */
-	private void backtrackPath() {
-		// start at the sink node
-		Node curNode = sink;
-		// DAG's weight is the sink node's weight
-		dag.setWeight(curNode.getWeight());
-		
-		// while not yet reaching source
-		while (curNode != source) {
-			// add the current node to DAG
-			dag.addNode(curNode);
-			// backtrack curNode from the current node
-			curNode = curNode.getBacktrack();
-		}
-		// finish by adding the source node
-		dag.addNode(source);
-	}
-	
+
 	/**
 	 * <h1>For outside-this-class users, give the path</h1>
 	 * First calculates weight and backtrack for all nodes, then finds the path by backtracking and prints it.
 	 */
 	public void findPath() {
 		calculateNodes();
-		backtrackPath();
-		// for convienence
+		dag.backtrack(source, sink);
+		// for convenience
 		System.out.println(dag);
 	}
 
 	// getters
 	
-	public Path getDag() {return dag;}
-	
 	public Node getSource() {return source;}
 	
 	public Node getSink() {return sink;}
 	
-	// no setters, since this class only allow initialization
-	// through the constructor or initializeNodes
+	// setters
+	
+	public void setSource(Node source) {this.source = source;}
+	
+	public void setSink(Node sink) {this.sink = sink;}
 }
