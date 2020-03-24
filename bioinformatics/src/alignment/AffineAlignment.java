@@ -3,8 +3,8 @@ package alignment;
 import java.util.HashMap;
 
 public class AffineAlignment extends Graph {
-	int total, cols;
-	HashMap<Integer, Node> refer;
+	private int total, cols;
+	private HashMap<Integer, Node> refer;
 	
 	/**
 	 * This class should never be instantiated without strings to align
