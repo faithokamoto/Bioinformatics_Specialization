@@ -1,10 +1,15 @@
 package reconstruction;
 
+//for writing to files
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.io.IOException;
+
+//for reading from files
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.io.IOException;
+
+//for all kinds of lists
 import java.util.*;
 import java.util.Map.Entry;
 

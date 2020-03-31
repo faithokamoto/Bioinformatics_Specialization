@@ -1,6 +1,6 @@
 package kmers;
 
-//for lists that grow as needed
+// for lists that grow as needed
 import java.util.ArrayList;
 
 //for reading from files
