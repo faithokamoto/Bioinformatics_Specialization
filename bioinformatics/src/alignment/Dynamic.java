@@ -5,9 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.IOException;
 
-//for all kinds of lists
-import java.util.*;
-
 /**
  * <h1>Dynamic Programming for DAGs</h1>
  * Contains the necessary methods to find the maximal weighted path through a grid-based

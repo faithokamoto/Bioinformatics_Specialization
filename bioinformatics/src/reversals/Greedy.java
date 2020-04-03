@@ -11,7 +11,6 @@ import java.io.IOException;
 
 // for lists that can change size
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class Greedy {
 	/**
