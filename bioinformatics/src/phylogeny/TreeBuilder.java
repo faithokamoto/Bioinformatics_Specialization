@@ -21,6 +21,17 @@ public class TreeBuilder {
 	private static int lastI, lastJ;
 	
 	/**
+	 * N-Constructor
+	 * <br>
+	 * For subclasses that have their own distance matrices,
+	 * and just need myTree initialized with n
+	 * @param n the number of leaves in the eventual tree
+	 */
+	public TreeBuilder(int n) {
+		myTree = new Tree(n);
+	}
+	
+	/**
 	 * Constructor
 	 * <br>
 	 * Initializes dists and myTree
@@ -85,7 +96,7 @@ public class TreeBuilder {
 	 * @param start the ID# of the optimal path-to-join's start Node w
 	 * @param end the ID# of the end Node of ^^
 	 */
-	public void addPathAtDistance(int newLeaf, int start, int end) {
+	private void addPathAtDistance(int newLeaf, int start, int end) {
 		int[] path = myTree.getNode(start).pathTo(myTree.getNode(end));
 		// calculate the effective limb length for this leaf from the given path
 		int effectiveLimb = (dists[start][newLeaf] + dists[end][newLeaf] - dists[start][end]) / 2;
@@ -129,7 +140,7 @@ public class TreeBuilder {
 			// calculate the length of the path from the new Node to the close Node
 			int closePath = dists[end][newLeaf] - effectiveLimb - afterDist;
 			// calculate the length of the path from the new Node to the open Node
-			int openPath = myTree.getNode(open).getWeight(close) - closePath;
+			int openPath = (int) myTree.getNode(open).getWeight(close) - closePath;
 			
 			// split the path
 			myTree.splitPath(open, newId, close, openPath, closePath);
@@ -175,4 +186,8 @@ public class TreeBuilder {
 	public void writeAdjList(String filename) {
 		myTree.writeAdjList(filename);
 	}
+	
+	// getter
+	
+	public Tree getTree() {return myTree;}
 }

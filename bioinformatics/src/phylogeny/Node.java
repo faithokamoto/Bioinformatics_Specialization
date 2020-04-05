@@ -21,9 +21,13 @@ public class Node {
 	 */
 	private int id;
 	/**
+	 * the evolutionary age of this Node
+	 */
+	private double age;
+	/**
 	 * all paths leading out of this Node, by Node and weight
 	 */
-	private HashMap<Node, Integer> paths;
+	private HashMap<Node, Double> paths;
 	/**
 	 * stores Node ID#s already visited for the use of some methods
 	 */
@@ -31,7 +35,7 @@ public class Node {
 	/**
 	 * the maximal path length for any Node
 	 */
-	private static int maxPath = 0;
+	private static double maxPath = 0;
 	
 	/**
 	 * Constructor
@@ -40,8 +44,20 @@ public class Node {
 	 * @param id the ID# of this Node
 	 */
 	public Node(int id) {
-		paths = new HashMap<Node, Integer>();
+		this(id, 0);
+	}
+	
+	/**
+	 * Age Constructor
+	 * <br>
+	 * Initializes id, age, and paths
+	 * @param id the ID# of this Node
+	 * @param age the age of this Node
+	 */
+	public Node(int id, double age) {
 		this.id = id;
+		this.age = age;
+		paths = new HashMap<Node, Double>();
 	}
 	
 	/**
@@ -57,7 +73,7 @@ public class Node {
 	 * @param weight the weight of the new path
 	 * @throws IllegalArgumentException if weight is negative
 	 */
-	public void addPath(Node end, int weight) {
+	public void addPath(Node end, double weight) {
 		// check if weight was illegal
 		if (weight < 0)
 			throw new IllegalArgumentException("Path from " + id + "->" + end.getId() + " can't have"
@@ -90,7 +106,7 @@ public class Node {
 	 * @param good used to differentiate this method from the public one
 	 * @return the minimum distance from this Node to the target Node
 	 */
-	private int getDistFromNode(Node node, boolean good) {
+	private double getDistFromNode(Node node, boolean good) {
 		// check if the Node being looked for is this one, dist of 0 if so
 		if (node == this) return 0;
 		// check if this Node has a path to the looked-for Node, dist is weight if so
@@ -99,7 +115,7 @@ public class Node {
 		// note that this Node has been visited
 		visited.add(this.id);
 		// set the minimum distance to the max minus the max path (to avoid going over)
-		int min = Integer.MAX_VALUE - maxPath;
+		double min = Double.MAX_VALUE - maxPath;
 		
 		// loop over all adjacent nodes
 		for (Node next : getAdjNodes())
@@ -118,7 +134,7 @@ public class Node {
 	 * @param node the Node to calculate distance from
 	 * @return the minimum distance from this Node to the target Node
 	 */
-	public int getDistFromNode(Node node) {
+	public double getDistFromNode(Node node) {
 		resetVisited();
 		return getDistFromNode(node, true);
 	}
@@ -203,7 +219,7 @@ public class Node {
 	 * @throws IllegalArgumentException if this Node doesn't have a path to the passed-in one
 	 * @return the weight of the path
 	 */
-	public int getWeight(Node node) {
+	public double getWeight(Node node) {
 		if (paths.containsKey(node)) return paths.get(node);
 		throw new IllegalArgumentException("This Node (#" + this.id + ") has no path to " + node.getId());
 	}
@@ -214,14 +230,28 @@ public class Node {
 	 * @throws IllegalArgumentException if this Node doesn't have a path to the passed-in one
 	 * @return the weight of the path
 	 */
-	public int getWeight(int id) {
+	public double getWeight(int id) {
 		for (Node n : paths.keySet()) if (n.getId() == id) return paths.get(n);
 		throw new IllegalArgumentException("This Node (#" + this.id + ") has no path to " + id);
 	}
+	
+	// setter
+	
+	public void setAge(double age) {this.age = age;}
 	
 	// getters
 	
 	public int getId() {return this.id;}
 	
 	public Set<Node> getAdjNodes() {return this.paths.keySet();}
+	
+	public double getAge() {return this.age;}
+	
+	public String toString() {
+		String ret = "#" + id + ": ";
+		for (Node curNode : getAdjNodes()) {
+			ret += "(" + curNode.getId() + ", " + getWeight(curNode) + ") ";
+		}
+		return ret;
+	}
 }

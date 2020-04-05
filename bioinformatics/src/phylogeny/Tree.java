@@ -111,14 +111,14 @@ public class Tree {
 	 * corresponding spots in the matrix
 	 * @return a 0-indexed distance matrix for all leaves
 	 */
-	public int[][] getDistanceMatrix() {
+	public double[][] getDistanceMatrix() {
 		// initialize return variable
-		int[][] dists = new int[n][n];
+		double[][] dists = new double[n][n];
 		
 		// loop over all node pairs
 		for (int from = 0; from < n; from++) for (int to = from + 1; to < n; to++) {
 			// calculate the distance between these nodes
-			int dist = nodes.get(from).getDistFromNode(nodes.get(to));
+			double dist = nodes.get(from).getDistFromNode(nodes.get(to));
 			// set the proper places in the matrix
 			dists[from][to] = dist;
 			dists[to][from] = dist;
@@ -165,14 +165,17 @@ public class Tree {
 			for (int i = 0; i <= highestNode; i++) {
 				// grab the current Node
 				Node curNode = getNode(i);
-				// grab its adjacent Nodes and sort by ID#
-				adj.clear();
-				adj.addAll(curNode.getAdjNodes());
-				sortNodes(adj);
-				
-				// write each path corresponding to an adjacent Node
-				for (Node out : adj) 
-					writer.write(curNode.getId() + "->" + out.getId() + ":" + curNode.getWeight(out) + "\n");
+				if (curNode.getAdjNodes() != null) {
+					// grab its adjacent Nodes and sort by ID#
+					adj.clear();
+					adj.addAll(curNode.getAdjNodes());
+					sortNodes(adj);
+					
+					// write each path corresponding to an adjacent Node
+					for (Node out : adj) 
+						writer.write(curNode.getId() + "->" + out.getId() + ":" + 
+								String.format("%.3f", curNode.getWeight(out)) + "\n");
+				}
 			}
 			
 			writer.close();
@@ -186,21 +189,32 @@ public class Tree {
 	/**
 	 * Adds a new Node to the master list
 	 * <br>
-	 * Initializes a new Node with the specified ID#,
-	 * updating highestNode if required
+	 * Calls addNode(int, double) with age=0
 	 * @param id the id# of the new node
-	 * @throws IllegalArgumentException if a Node with the specified ID already exists
 	 * @returns the Node that was added
 	 */
 	public Node addNode(int id) {
+		return addNode(id, 0.0);
+	}
+	
+	/**
+	 * Adds a new Node to the master list
+	 * <br>
+	 * Initializes a new Node with the specified ID#
+	 * and age, updating highestNode if required
+	 * @param id the id# of the new node
+	 * @param age the age of the new node
+	 * @throws IllegalArgumentException if a Node with the specified ID already exists
+	 * @returns the Node that was added
+	 */
+	public Node addNode(int id, double age) {
 		// check if a node with this ID exists
 		if (getNode(id) != null)
 			throw new IllegalArgumentException("Node with id#" + id + " already exists");
-		Node newNode = new Node(id);
+		Node newNode = new Node(id, age);
 		nodes.add(newNode);
 		// check if highestNode needs to be updated
 		if (id > highestNode) highestNode = id;
-		
 		return newNode;
 	}
 	
@@ -222,7 +236,7 @@ public class Tree {
 	 * @param end the other Node on the path
 	 * @param val the weight of the path
 	 */
-	public void addPath(Node start, Node end, int val) {
+	public void addPath(Node start, Node end, double val) {
 		start.addPath(end, val);
 		end.addPath(start, val);
 	}
@@ -233,7 +247,8 @@ public class Tree {
 	 * @param end the ID# of the other Node
 	 * @param val the weight of the path
 	 */
-	public void addPath(int start, int end, int val) {
+	public void addPath(int start, int end, double val) {
+		if (getNode(end) == null) addNode(end);
 		addPath(getNode(start), getNode(end), val);
 	}
 	
@@ -246,7 +261,7 @@ public class Tree {
 	 * @param val the weight of the new path
 	 * @return the Node added
 	 */
-	public Node addNodeWithPath(int newId, int endId, int val) {
+	public Node addNodeWithPath(int newId, int endId, double val) {
 		// add the Node
 		Node newNode = addNode(newId);
 		// check if the other Node must be added as well
@@ -298,6 +313,10 @@ public class Tree {
 	}
 	
 	// getters
+	
+	public double getAge(Node node) {return node.getAge();}
+	
+	public double getAge(int id) {return getAge(getNode(id));}
 	
 	public int getN() {return n;}
 	

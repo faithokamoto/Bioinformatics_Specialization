@@ -14,16 +14,16 @@ public class TreeBuilderRunner {
 	 * @param filename the file to read from
 	 * @return the completed distance matrix
 	 */
-	public static int[][] readDistMatrix(String filename) {
+	public static double[][] readDistMatrix(String filename) {
 		// initialize the return variable
-		int[][] distMatrix = null;
+		double[][] distMatrix = null;
 		// attempt to point a scanner at a file
 		try {
 			Scanner reader = new Scanner(new File(filename));
 			// read the dimensions of the matrix
 			int n = reader.nextInt();
 			// initialize to those dimensions
-			distMatrix = new int[n][n];
+			distMatrix = new double[n][n];
 			
 			// read all ints into the proper place in the matrix
 			for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) 
@@ -46,7 +46,7 @@ public class TreeBuilderRunner {
 	 */
 	public static void main(String args[]) {
 		// initialize the TreeBuilder with a distance matrix
-		TreeBuilder run = new TreeBuilder(readDistMatrix("src/phylogeny/data.txt"));
+		TreeBuilder run = new TreeBuilderNJ(readDistMatrix("src/phylogeny/data.txt"));
 		// build the tree
 		run.buildTree();
 		// print the tree's adjacency list
