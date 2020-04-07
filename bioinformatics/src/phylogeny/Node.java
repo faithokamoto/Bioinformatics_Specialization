@@ -20,10 +20,8 @@ public class Node {
 	 * the ID# of this Node, used to refer to each other
 	 */
 	private int id;
-	/**
-	 * the evolutionary age of this Node
-	 */
 	private double age;
+	private String label;
 	/**
 	 * all paths leading out of this Node, by Node and weight
 	 */
@@ -44,20 +42,18 @@ public class Node {
 	 * @param id the ID# of this Node
 	 */
 	public Node(int id) {
-		this(id, 0);
+		this.id = id;
+		paths = new HashMap<Node, Double>();
 	}
 	
-	/**
-	 * Age Constructor
-	 * <br>
-	 * Initializes id, age, and paths
-	 * @param id the ID# of this Node
-	 * @param age the age of this Node
-	 */
 	public Node(int id, double age) {
-		this.id = id;
+		this(id);
 		this.age = age;
-		paths = new HashMap<Node, Double>();
+	}
+	
+	public Node(int id, String label) {
+		this(id);
+		this.label = label;
 	}
 	
 	/**
@@ -235,9 +231,9 @@ public class Node {
 		throw new IllegalArgumentException("This Node (#" + this.id + ") has no path to " + id);
 	}
 	
-	// setter
-	
 	public void setAge(double age) {this.age = age;}
+	
+	public void setLabel(String label) {this.label = label;}
 	
 	// getters
 	
@@ -246,6 +242,8 @@ public class Node {
 	public Set<Node> getAdjNodes() {return this.paths.keySet();}
 	
 	public double getAge() {return this.age;}
+	
+	public String getLabel() {return this.label;}
 	
 	public String toString() {
 		String ret = "#" + id + ": ";

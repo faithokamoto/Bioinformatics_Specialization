@@ -3,7 +3,7 @@ package phylogeny;
 /**
  * A specialized TreeBuilder with an overridden buildTree() that uses the UPGMA algorithm.
  * Also has a special, resizable DistanceMatrix
- * @see phylogeny.TreeBuilder
+ * @see phylogeny.AdditiveTreeBuilder
  * @author faith
  */
 public class TreeBuilderUPGMA extends TreeBuilder {

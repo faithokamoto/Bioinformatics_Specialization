@@ -189,12 +189,31 @@ public class Tree {
 	/**
 	 * Adds a new Node to the master list
 	 * <br>
-	 * Calls addNode(int, double) with age=0
+	 * Calls addNode(int) and sets its age
 	 * @param id the id# of the new node
+	 * @param age the age of the new node
 	 * @returns the Node that was added
 	 */
-	public Node addNode(int id) {
-		return addNode(id, 0.0);
+	public Node addNode(int id, double age) {
+		Node newNode = addNode(id);
+		newNode.setAge(age);
+		
+		return newNode;
+	}
+	
+	/**
+	 * Adds a new Node to the master list
+	 * <br>
+	 * Calls addNode(int) and sets its age
+	 * @param id the id# of the new node
+	 * @param age the age of the new node
+	 * @returns the Node that was added
+	 */
+	public Node addNode(int id, String label) {
+		Node newNode = addNode(id);
+		newNode.setLabel(label);
+		
+		return newNode;
 	}
 	
 	/**
@@ -203,15 +222,14 @@ public class Tree {
 	 * Initializes a new Node with the specified ID#
 	 * and age, updating highestNode if required
 	 * @param id the id# of the new node
-	 * @param age the age of the new node
 	 * @throws IllegalArgumentException if a Node with the specified ID already exists
 	 * @returns the Node that was added
 	 */
-	public Node addNode(int id, double age) {
+	public Node addNode(int id) {
 		// check if a node with this ID exists
 		if (getNode(id) != null)
 			throw new IllegalArgumentException("Node with id#" + id + " already exists");
-		Node newNode = new Node(id, age);
+		Node newNode = new Node(id);
 		nodes.add(newNode);
 		// check if highestNode needs to be updated
 		if (id > highestNode) highestNode = id;
