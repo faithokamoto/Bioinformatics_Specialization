@@ -204,21 +204,6 @@ public class Tree {
 	/**
 	 * Adds a new Node to the master list
 	 * <br>
-	 * Calls addNode(int) and sets its age
-	 * @param id the id# of the new node
-	 * @param age the age of the new node
-	 * @returns the Node that was added
-	 */
-	public Node addNode(int id, String label) {
-		Node newNode = addNode(id);
-		newNode.setLabel(label);
-		
-		return newNode;
-	}
-	
-	/**
-	 * Adds a new Node to the master list
-	 * <br>
 	 * Initializes a new Node with the specified ID#
 	 * and age, updating highestNode if required
 	 * @param id the id# of the new node

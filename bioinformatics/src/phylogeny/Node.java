@@ -21,7 +21,6 @@ public class Node {
 	 */
 	private int id;
 	private double age;
-	private String label;
 	/**
 	 * all paths leading out of this Node, by Node and weight
 	 */
@@ -46,14 +45,16 @@ public class Node {
 		paths = new HashMap<Node, Double>();
 	}
 	
+	/**
+	 * Age Constructor
+	 * <br>
+	 * Initializes id, age, and path
+	 * @param id the ID# of this Node
+	 * @param age the age of this Node
+	 */
 	public Node(int id, double age) {
 		this(id);
 		this.age = age;
-	}
-	
-	public Node(int id, String label) {
-		this(id);
-		this.label = label;
 	}
 	
 	/**
@@ -233,8 +234,6 @@ public class Node {
 	
 	public void setAge(double age) {this.age = age;}
 	
-	public void setLabel(String label) {this.label = label;}
-	
 	// getters
 	
 	public int getId() {return this.id;}
@@ -242,8 +241,6 @@ public class Node {
 	public Set<Node> getAdjNodes() {return this.paths.keySet();}
 	
 	public double getAge() {return this.age;}
-	
-	public String getLabel() {return this.label;}
 	
 	public String toString() {
 		String ret = "#" + id + ": ";

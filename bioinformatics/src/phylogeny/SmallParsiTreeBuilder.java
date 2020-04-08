@@ -14,11 +14,16 @@ import java.io.FileWriter;
  * writeAdjList to write the adjacency list with the calculated labels.
  * @author faith
  */
-public class ParsimonyTreeBuilder extends TreeBuilder {
+public class SmallParsiTreeBuilder extends TreeBuilder {
 	/**
 	 *  all of the possible DNA bases
 	 */
 	private static final char[] BASES = {'A', 'C', 'G', 'T'}; 
+	/**
+	 * all of the possible amino acids
+	 */
+	private static final char[] ACIDS = {'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
+			'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y'};
 	/**
 	 *  the (directed) adjacency list of the tree
 	 */
@@ -40,7 +45,7 @@ public class ParsimonyTreeBuilder extends TreeBuilder {
 	 * @param adjList the (directed, downward) adjacency list of this tree
 	 * @param labelMap a mapping of (at least) all leaves to labels
 	 */
-	public ParsimonyTreeBuilder(HashMap<Integer, ArrayList<Integer>> adjList,
+	public SmallParsiTreeBuilder(HashMap<Integer, ArrayList<Integer>> adjList,
 			HashMap<Integer, char[]> labelMap) {
 		super(labelMap.size());
 		this.adjList = adjList;
@@ -185,17 +190,17 @@ public class ParsimonyTreeBuilder extends TreeBuilder {
 			int min = Integer.MAX_VALUE;
 			
 			// loop over all bases
-			for (int b = 0; b < BASES.length; b++) {
+			for (int a = 0; a < ACIDS.length; a++) {
 				// if this score beats the current best
-				if (score[node][b] < min) {
+				if (score[node][a] < min) {
 					// set best to only this base
 					best.clear();
-					best.add(BASES[b]);
+					best.add(ACIDS[a]);
 					// set the minimum to this score
-					min = score[node][b];
+					min = score[node][a];
 				}
 				// or if it just matches, add the current base
-				else if (score[node][b] == min) best.add(BASES[b]);
+				else if (score[node][a] == min) best.add(ACIDS[a]);
 			}
 			
 			// if only one char is the best, or if this is the root node (no way to break ties)
@@ -215,12 +220,36 @@ public class ParsimonyTreeBuilder extends TreeBuilder {
 		}
 	}
 	
+	// various protected methods to allow some classes to modify adjList
+	
+	/**
+	 * Removes a path from the adjacency list
+	 * <br>
+	 * Removes for adjList, then checks if the entry should be deleted entirely
+	 * @param start the start node ID# of the path to delete
+	 * @param end the end node ID# of the path to delete
+	 * @throws IllegalArgumentException if the path does not exist
+	 */
 	protected void removePath(int start, int end) {
-		adjList.get(start).remove((Integer) end);
+		if(!adjList.get(start).remove((Integer) end))
+			throw new IllegalArgumentException(
+					"Can't remove path " + start +
+					"->" + end + " that doesn't exist");
 		if (adjList.get(start).isEmpty()) adjList.remove(start);
 	}
 	
+	/**
+	 * Adds a path to the adjacency list
+	 * <br>
+	 * Adds an entry if necessary, then adds the path
+	 * @param start the start node ID# of the path to delete
+	 * @param end the end node ID# of the path to delete
+	 * @throws IllegalArgumentException if path already exists
+	 */
 	protected void addPath(int start, int end) {
+		if (adjList.get(start).contains(end))
+			throw new IllegalArgumentException("Can't add path "
+					+ start + "->" + end + " that already exist");
 		adjList.putIfAbsent(start, new ArrayList<Integer>());
 		adjList.get(start).add(end);
 	}
@@ -238,21 +267,22 @@ public class ParsimonyTreeBuilder extends TreeBuilder {
 	 * score for the root node.
 	 */
 	public void buildTree() {
+		totalScore = 0;
 		// loop for all chars-spots that need labeling
 		for (int let = 0, len = labelMap.get(0).length; let < len; let++) {
 			// note that no nodes have been processed (all indexes have false)
 			boolean[] processed = new boolean[labelMap.size()];
 			// initialize a parsimony score array
-			int[][] score = new int[processed.length][4];
+			int[][] score = new int[processed.length][ACIDS.length];
 			
 			// loop over all leaf nodes
 			for (int node = 0; node < getTree().getN(); node++) {
 				// note that this node has been processed
 				processed[node] = true;
 				// loop over all bases
-				for (int b = 0; b < BASES.length; b++)
+				for (int a = 0; a < ACIDS.length; a++)
 					// if the char in this position and the base do not match, score = 1
-					if (labelMap.get(node)[let] != BASES[b]) score[node][b]++;	
+					if (labelMap.get(node)[let] != ACIDS[a]) score[node][a]++;	
 			}
 			
 			// grab a ripe node
@@ -262,21 +292,21 @@ public class ParsimonyTreeBuilder extends TreeBuilder {
 				// note that this node has been processed
 				processed[ripe] = true;
 				// loop over each base, and for each base loop over each child
-				for (int b = 0; b < BASES.length; b++) for (Integer child : adjList.get(ripe)) {
+				for (int a = 0; a < ACIDS.length; a++) for (Integer child : adjList.get(ripe)) {
 					// initialize the minimum score to the maximum possible
 					int min = Integer.MAX_VALUE;
 					
 					// loop over each base for this child
-					for (int cb = 0; cb < BASES.length; cb++) {
+					for (int ca = 0; ca < ACIDS.length; ca++) {
 						// set the score at this point to the child's score
-						int val = score[child][cb];
+						int val = score[child][ca];
 						// if the child-base and the parent-base don't match, increment the score
-						if (cb != b) val++;
+						if (ca != a) val++;
 						// if the score beats the current minimum, set it as so
 						if (val < min) min = val;
 					}
 					// add this child's sub-score to the overall score for this node
-					score[ripe][b] += min;
+					score[ripe][a] += min;
 				}
 				
 				// get another ripe node
@@ -293,6 +323,9 @@ public class ParsimonyTreeBuilder extends TreeBuilder {
 	/**
 	 * Writes the adjacency list of the labeled tree to a file
 	 * <br>
+	 * Loops over all start nodes, and then all end nodes of paths coming out,
+	 * and calculates the weight (hamming distance) of the path. Writes both
+	 * paths (start->end, end->start) with the proper weight, formatted.
 	 * @param filename the file to write to
 	 */
 	public void writeAdjList(String filename) {
@@ -326,4 +359,36 @@ public class ParsimonyTreeBuilder extends TreeBuilder {
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * Clones the adjacency list
+	 * <br>
+	 * Loops over each node-key, cloning its value for a new HashMap
+	 * @return a deep-copy of the adjacency list
+	 */
+	public HashMap<Integer, ArrayList<Integer>> getAdjList() {
+		// initialize return variable to exact size needed
+		HashMap<Integer, ArrayList<Integer>> copy =
+				new HashMap<Integer, ArrayList<Integer>>(adjList.size());
+		// loop over all keys, adding in a deep-copy of the value
+		for (Integer key : adjList.keySet())
+			copy.put(key, new ArrayList<Integer>(adjList.get(key)));
+		
+		return copy;
+	}
+
+	/**
+	 * Gets all paths coming out of a node
+	 * @param node the node to consider
+	 * @return all node ID#s at the other end of the paths
+	 */
+	public ArrayList<Integer> getPaths(int node) {
+		return new ArrayList<Integer>(adjList.get(node));
+	}
+	
+	/**
+	 * Getter for the score of this tree
+	 * @return this.totalScore
+	 */
+	public int getScore() {return totalScore;}
 }

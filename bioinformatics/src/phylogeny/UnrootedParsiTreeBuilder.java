@@ -10,27 +10,33 @@ import java.util.ArrayList;
  * Tree Builder (one of which is a reference), but runs background methods to supplement
  * @author faith
  */
-public class UnrootedParsimonyTreeBuilder {
+public class UnrootedParsiTreeBuilder extends TreeBuilder{
 	/**
 	 * the TreeBuilder which actually builds
 	 */
-	private ParsimonyTreeBuilder builder;
+	private SmallParsiTreeBuilder builder;
 	/**
 	 * the nodes ID#s on the edge split to add a root
 	 */
 	private int[] splitEdge;
+	/**
+	 * whether the adjacency list has been rooted
+	 */
+	private boolean rooted;
 	
 	/**
 	 * Constructor
 	 * <br>
-	 * Roots the tree passed in, then initializes the PTB reference
+	 * Roots the tree passed in, then initializes the SPTB reference
 	 * @param adjList the (undirected, unrooted) adjacency list of this tree
-	 * @param labelMap a mapping of (at least) all leaves to labels
+	 * @param labelMap a mapping of all leaves to labels
 	 */
-	public UnrootedParsimonyTreeBuilder(HashMap<Integer, ArrayList<Integer>> adjList,
+	public UnrootedParsiTreeBuilder(HashMap<Integer, ArrayList<Integer>> adjList,
 			HashMap<Integer, char[]> labelMap) {
-		rootTree(adjList, labelMap.size() + adjList.size());
-		builder = new ParsimonyTreeBuilder(adjList, labelMap);
+		super(labelMap.size());
+		rooted = false;
+		rootTree(adjList, adjList.size());
+		builder = new SmallParsiTreeBuilder(adjList, labelMap);
 	}
 	
 	/**
@@ -43,8 +49,8 @@ public class UnrootedParsimonyTreeBuilder {
 	 * @param rootID the ID of the root node to add
 	 */
 	private void rootTree(HashMap<Integer, ArrayList<Integer>> adjList, int rootID) {
-		// initialize splitEdge to the 2 highest nodes split by the new highest node
-		splitEdge = new int[] {rootID - 1, rootID, rootID - 2};
+		// initialize splitEdge to the highest node & a connection split by new node
+		splitEdge = new int[] {rootID - 1, rootID, adjList.get(rootID - 1).get(0)};
 		
 		// remove the old edge from the adjacency list
 		adjList.get(splitEdge[0]).remove((Integer) splitEdge[2]);
@@ -58,25 +64,31 @@ public class UnrootedParsimonyTreeBuilder {
 		ArrayList<Integer> processing = new ArrayList<Integer>();
 		processing.add(splitEdge[0]);
 		processing.add(splitEdge[2]);
+		
 		// while some nodes still need to be processed
 		while (!processing.isEmpty()) {
 			// loop over processing from the back (to make removal easier)
 			for (int i = processing.size() - 1; i >= 0; i--) {
+				int node = processing.get(i);
 				// loop over all nodes coming out of the current one
-				for (Integer out : adjList.get(processing.get(i))) {
+				for (int j = adjList.get(node).size() - 1; j >= 0; j--) {
+					int out = adjList.get(node).get(j);
 					// if this out has nodes coming out of it
 					if (adjList.containsKey(out)) {
 						// remove path from out-node back to current node
-						adjList.get(out).remove(processing.get(i));
+						adjList.get(out).remove((Integer) node);
 						// add out-node to the processing queue
 						processing.add(out);
 					}
 				}
 				
 				// this node has been processed, get rid of it
-				processing.remove(i);
+				processing.remove((Integer) node);
 			}
 		}
+		
+		// the tree is now rooted
+		rooted = true;
 	}
 	
 	/**
@@ -88,6 +100,7 @@ public class UnrootedParsimonyTreeBuilder {
 		builder.removePath(splitEdge[1], splitEdge[0]);
 		builder.removePath(splitEdge[1], splitEdge[2]);
 		builder.addPath(splitEdge[0], splitEdge[2]);
+		rooted = false;
 	}
 	
 	/**
@@ -98,13 +111,43 @@ public class UnrootedParsimonyTreeBuilder {
 	}
 	
 	/**
-	 * Writes the adjaceny list of this tree to a file
+	 * Writes the adjacency list of this tree to a file
 	 * <br>
 	 * Unroots the tree's adjacency list, then uses the builder's method
 	 * @param filename the file to write to
 	 */
 	public void writeAdjList(String filename) {
-		unrootTree();
+		if (rooted) unrootTree();
 		builder.writeAdjList(filename);
 	}
+	
+	/**
+	 * Converts the adjacency list into a unrooted, undirected one
+	 * <br>
+	 * Unroots the tree (if necessary), then copies all paths in an opposite way
+	 * @return this tree's unrooted, undirected adjacency list
+	 */
+	public HashMap<Integer, ArrayList<Integer>> getAdjList() {
+		// check if tree needs to be unrooted
+		if (rooted) unrootTree();
+		
+		// loop over all starts of a path
+		for (Integer start : builder.getAdjList().keySet())
+			// loop over all ends
+			for (Integer end : builder.getPaths(start))
+				// add end->start as a path if is doesn't exist yet
+				if (!builder.getPaths(end).contains(start))
+					builder.addPath(end, start);
+			
+		// tree is no longer rooted
+		rooted = false;
+		
+		return builder.getAdjList();
+	}
+	
+	/**
+	 * Getter for score of this tree
+	 * @return builder.getScore()
+	 */
+	public int getScore() {return builder.getScore();}
 }
