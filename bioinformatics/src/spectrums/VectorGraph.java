@@ -83,7 +83,11 @@ public class VectorGraph {
 	 * @param nodeWeights the weights of the various spectrum spots
 	 */
 	public VectorGraph(byte[] nodeWeights) {
-		this.nodeWeights = nodeWeights;
+		setVector(nodeWeights);
+	}
+	
+	public void setVector(byte[] newWeights) {
+		nodeWeights = newWeights;
 	}
 	
 	/**
@@ -134,6 +138,187 @@ public class VectorGraph {
 			calcNode(node, maxScores, maxStrings);
 		// return the source node's string
 		return maxStrings[0];
+	}
+	
+	/**
+	 * Calculates the weight of a peptide
+	 * <br>
+	 * Adds the weight of each amino acid from the rmt
+	 * @param peptide the peptide to find weight of
+	 * @return the total weight of each amino acid in the peptide
+	 */
+	private static int totalWeight(String peptide) {
+		// initialize return variable
+		int weight = 0;
+		// loop over all chars in peptide
+		for (int i = 0; i < peptide.length(); i++)
+			// add weight of this char
+			weight += REVERSE_MASS_TABLE.get(peptide.charAt(i));
+		
+		return weight;
+	}
+	
+	/**
+	 * Scores a peptide against the vector
+	 * <br>
+	 * Loops through all amino acids, moving the node# up
+	 * and adding up the scores
+	 * @param peptide the peptide to score
+	 * @return the score of the peptide
+	 */
+	private int scorePeptide(String peptide) {
+		// initialize return variable
+		int score = 0;
+		// initialize the node to -1 (0 weight)
+		int node = -1;
+		// loop over all chars in peptide
+		for (int i = 0; i < peptide.length(); i++) {
+			// add this aminno acid's weight to node
+			node += REVERSE_MASS_TABLE.get(peptide.charAt(i));
+			// add the score of this node to the score
+			score += nodeWeights[node];
+		}
+		
+		return score;
+	}
+	
+	/**
+	 * Finds the highest-scoring peptide against a protenome
+	 * <br>
+	 * Starting with start index and end index at 0, substrings
+	 * protenome and calcualtes the peptide's weight. If wrong, shifts
+	 * indexes, and if right calculates score. Peptides that score above
+	 * all previous ones are saved.
+	 * @param protenome a protenome to search through
+	 * @return the highest scoring amino acid substring of protenome
+	 */
+	public String findPeptide(String protenome) {
+		// initially, the best peptide
+		String bestPeptide = "";
+		// the best score so far is the minimum possible
+		int bestScore = Integer.MIN_VALUE, score;
+		// the [start index, end index) of the peptide
+		int startIndex = 0, endIndex = 0;
+		
+		// while endIndex is valid
+		while (endIndex <= protenome.length()) {
+			// set peptide to the proper substring
+			String peptide = protenome.substring(startIndex, endIndex);
+			// calculate its weight
+			int weight = totalWeight(peptide);
+			
+			// if it weighs too little, add a char by moving endIndex up
+			if (weight < nodeWeights.length) endIndex++;
+			// if it weights too much, delete a char by moving startIndex up
+			else if (weight > nodeWeights.length) startIndex++;
+			// or if it weighs the right amount
+			else {
+				// score it
+				score = scorePeptide(peptide);
+				// if the score is the best so far
+				if (score > bestScore) {
+					// set bestScore and bestPeptide
+					bestScore = score;
+					bestPeptide = peptide;
+				}
+				// shift the indexes forward
+				startIndex++;
+				endIndex++;
+			}
+		}
+		
+		return bestPeptide;
+	}
+	
+	/**
+	 * Finds a peptide in a protenome that scores above threshold
+	 * <br>
+	 * Gets the best peptide, only returning it if its score
+	 * is high enough.
+	 * @param protenome the protenome to search
+	 * @param threshold the minimum acceptable score
+	 * @return the best peptide if score >= threshold, otherwise null
+	 */
+	public String findPeptide(String protenome, int threshold) {
+		String peptide = findPeptide(protenome);
+		if (scorePeptide(peptide) >= threshold) return peptide;
+		else return null;
+	}
+	
+	/**
+	 * Calculates the probability of a dictionary
+	 * <br>
+	 * Loops over all possible cases of masses (amino acids) to
+	 * have as the last one, calculating the new node and target
+	 * score for each. Adds up all probabilities for all cases.
+	 * @param end the end of the subset of nodes to use
+	 * @param target the target score for the peptides
+	 * @param preCalc a dynamic array to hold precalculated values
+	 */
+	private void calcDictProb(int end, int target, Double[][] preCalc) {
+		// initialize this spot to 0
+		preCalc[end][target] = 0.0;
+		// loop over all possible masses to remove
+		for (short mass : REVERSE_MASS_TABLE.values()) {
+			// calculate the new end and target
+			int newEnd = end - mass;
+			int newTarget = target - nodeWeights[end];
+			// initialize the probability
+			double prob = 0;
+			
+			// now to find the probability of this case
+			
+			// if any boundary conditions are violated
+			if (newTarget < 0 || newEnd < -1 ||
+					newTarget >= preCalc[0].length)
+				// probability stays 0
+				prob = 0;
+			// if the new end would be the 0-th node
+			else if (newEnd == -1) {
+				// if the target is 0 score, then probability is 1/20
+				if (newTarget == 0) prob = 1 / 20.0;
+				// any other target is not possible
+				else prob = 0;
+			}
+			// if this probability has already been calculated
+			else if (preCalc[newEnd][newTarget] != null)
+				// just use that
+				prob = preCalc[newEnd][newTarget] / 20;
+			// or if this probability has to be calculated
+			else {
+				//calculate it, and use it
+				calcDictProb(newEnd, newTarget, preCalc);
+				prob = preCalc[newEnd][newTarget] / 20;
+			}
+			
+			// add this case's probability
+			preCalc[end][target] += prob;
+		}
+	}
+	
+	/**
+	 * Calculates the probability of a dictionary
+	 * <br>
+	 * Calls calcDicProb with end node as the last node and score
+	 * as every score on [threshold, maxScore], adding up all
+	 * @param threshold the minimum score to accept
+	 * @param maxScore the maximum score to accept
+	 * @return the probability of a dictionary on this vector
+	 */
+	public double dictProb(int threshold, int maxScore) {
+		// initialize return variable
+		double total = 0;
+		// initialize the dynamic array
+		Double[][] preCalc = new Double[nodeWeights.length][maxScore + 1];
+		
+		// loop over all allowed scores
+		for (int score = threshold; score <= maxScore; score++) {
+			// calculate the probability over the whole vector for each
+			calcDictProb(nodeWeights.length - 1, score, preCalc);
+			// add this probability
+			total += preCalc[nodeWeights.length - 1][score];
+		}
+		return total;
 	}
 	
 	/**
