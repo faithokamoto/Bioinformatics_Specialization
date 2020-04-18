@@ -4,12 +4,12 @@ package clusters;
  * A clustering graph that uses the K-means algorithm
  * @author faith
  */
-public class KMeansGraph extends ClusterGraph {
+public class FFTGraph extends ClusterGraph {
 	/**
 	 * Constructor
 	 * @param points the points to cluster
 	 */
-	public KMeansGraph(float[][] points) {
+	public FFTGraph(float[][] points) {
 		super(points);
 	}
 	
