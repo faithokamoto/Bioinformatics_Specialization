@@ -27,7 +27,7 @@ public class TreeBuilderRunner {
 			
 			// read all ints into the proper place in the matrix
 			for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) 
-					distMatrix[i][j] = reader.nextInt();
+					distMatrix[i][j] = reader.nextDouble();
 			// clean up
 			reader.close();
 		}
