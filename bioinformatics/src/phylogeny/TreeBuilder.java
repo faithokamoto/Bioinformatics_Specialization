@@ -30,8 +30,8 @@ public abstract class TreeBuilder {
 	 * Writes the adjacency list of the Tree to a file
 	 * @param filename the file to write to
 	 */
-	public void writeAdjList(String filename) {
-		myTree.writeAdjList(filename);
+	public void writeAdjList(String filename, int round) {
+		myTree.writeAdjList(filename, round);
 	}
 	
 	// getter

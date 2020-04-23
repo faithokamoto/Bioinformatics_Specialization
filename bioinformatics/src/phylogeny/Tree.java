@@ -152,8 +152,9 @@ public class Tree {
 	 * For each Node, sorts the list of all adjacent Nodes and
 	 * prints out each corresponding path.
 	 * @param filename the file to write to
+	 * @param round the number of digits past the decimal place to use
 	 */
-	public void writeAdjList(String filename) {
+	public void writeAdjList(String filename, int round) {
 		// try to look at the file
 		try {
 			// point a writer at the file
@@ -174,7 +175,7 @@ public class Tree {
 					// write each path corresponding to an adjacent Node
 					for (Node out : adj) 
 						writer.write(curNode.getId() + "->" + out.getId() + ":" + 
-								String.format("%.3f", curNode.getWeight(out)) + "\n");
+								String.format("%." + round + "f", curNode.getWeight(out)) + "\n");
 				}
 			}
 			
@@ -219,6 +220,15 @@ public class Tree {
 		// check if highestNode needs to be updated
 		if (id > highestNode) highestNode = id;
 		return newNode;
+	}
+	
+	public Node removeNode(int id) {
+		return removeNode(getNode(id));
+	}
+	
+	public Node removeNode(Node rem) {
+		nodes.remove(rem);
+		return rem;
 	}
 	
 	/**
@@ -313,6 +323,32 @@ public class Tree {
 	 */
 	public void splitPath(int start, int middle, int end, int startPath, int endPath) {
 		splitPath(getNode(start), middle, getNode(end), startPath, endPath);
+	}
+	/**
+	 * Normalizes all Node ID#s so they go from 0->highestNode
+	 * <br>
+	 * Loops down the IDs available, and if one does not have a node
+	 * shifts all the nodes with higher ID#s down one
+	 */
+	public void normalizeNodes() {
+		// loop from back (so moving down is easier)
+		for (int i = highestNode - 1; i >= 0; i--)
+			// if this ID# needs a node
+			if (getNode(i) == null) {
+				// loop over all ID#s above it
+				for (int j = i + 1; j <= highestNode; i=j++) {
+					// add a copied Node
+					nodes.add(new Node(getNode(j), -1));
+					// loop over all Nodes that had paths to the old node
+					for (Node end : getNode(j).getAdjNodes())
+						// adjust the path to lead to the new Node
+						end.editPath(getNode(j), getNode(j - 1), end.getWeight(j));
+					// delete the old Node
+					nodes.remove(getNode(j));
+				}
+				// adjust highestNode
+				highestNode--;
+			}
 	}
 	
 	// getters

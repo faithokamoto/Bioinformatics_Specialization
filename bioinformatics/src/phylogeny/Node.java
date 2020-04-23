@@ -19,7 +19,7 @@ public class Node {
 	/**
 	 * the ID# of this Node, used to refer to each other
 	 */
-	private int id;
+	private final int id;
 	private double age;
 	/**
 	 * all paths leading out of this Node, by Node and weight
@@ -43,6 +43,18 @@ public class Node {
 	public Node(int id) {
 		this.id = id;
 		paths = new HashMap<Node, Double>();
+	}
+	
+	/**
+	 * Copy Constructor
+	 * <br>
+	 * Copies a Node, adjusting its ID#
+	 * @param old the Node to copy
+	 * @param idChange the amount to change the ID#
+	 */
+	public Node(Node old, int idChange) {
+		id = old.getId() + idChange;
+		paths = new HashMap<Node, Double>(old.getPaths());
 	}
 	
 	/**
@@ -88,11 +100,15 @@ public class Node {
 	 * @param newEnd the Node at the end of the new path
 	 * @param newWeight the new weight of the path
 	 */
-	public void editPath(Node oldEnd, Node newEnd, int newWeight) {
+	public void editPath(Node oldEnd, Node newEnd, double newWeight) {
 		paths.remove(oldEnd);
 		addPath(newEnd, newWeight);
 	}
-
+	
+	public void editWeight(Node end, double change) {
+		paths.put(end, paths.get(end) + change);
+	}
+	
 	/**
 	 * Calculates the distance from this Node to another
 	 * <br>
@@ -241,6 +257,8 @@ public class Node {
 	public Set<Node> getAdjNodes() {return this.paths.keySet();}
 	
 	public double getAge() {return this.age;}
+	
+	private HashMap<Node, Double> getPaths() {return this.paths;}
 	
 	public String toString() {
 		String ret = "#" + id + ": ";

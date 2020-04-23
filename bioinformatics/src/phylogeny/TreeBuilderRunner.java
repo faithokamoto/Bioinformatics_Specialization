@@ -50,6 +50,6 @@ public class TreeBuilderRunner {
 		// build the tree
 		run.buildTree();
 		// print the tree's adjacency list
-		run.writeAdjList("src/phylogeny/output.txt");
+		run.writeAdjList("src/phylogeny/output.txt", 3);
 	}
 }
